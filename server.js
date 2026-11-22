@@ -9,11 +9,15 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
+const isVercel = process.env.VERCEL === '1';
+const isVercelPreview = isVercel && process.env.VERCEL_ENV === 'preview';
+const isProduction = process.env.NODE_ENV === 'production' && !isVercelPreview;
 const host = process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
-if (process.env.NODE_ENV === 'production' && !process.env.APP_BASE_URL) {
+const vercelBaseUrl = isVercel && process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '';
+if (isProduction && !process.env.APP_BASE_URL) {
   throw new Error('APP_BASE_URL must be set to the public HTTPS URL in production.');
 }
-const appBaseUrl = (process.env.APP_BASE_URL || `http://localhost:${port}`).replace(/\/+$/, '');
+const appBaseUrl = (process.env.APP_BASE_URL || vercelBaseUrl || `http://localhost:${port}`).replace(/\/+$/, '');
 const callbackUrl = process.env.GOOGLE_CALLBACK_URL || `${appBaseUrl}/auth/google/callback`;
 const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
 const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
@@ -24,11 +28,13 @@ const sessionCookieName = 'dart_session';
 const sessionLifetimeSeconds = 60 * 60 * 24 * 30;
 const databaseUrl = (process.env.DATABASE_URL || '').trim();
 const databasePath = path.resolve(process.env.DATABASE_PATH || path.join(__dirname, 'data', 'dart.sqlite'));
+const requiresPostgres = isProduction || (isVercel && process.env.VERCEL_ENV !== 'development');
 
-if (process.env.NODE_ENV === 'production') {
-  if (!databaseUrl) {
-    throw new Error('DATABASE_URL must point to the production PostgreSQL database.');
-  }
+if (requiresPostgres && !databaseUrl) {
+  throw new Error('DATABASE_URL must point to the PostgreSQL database in production deployments.');
+}
+
+if (isProduction) {
   if (appUrl.protocol !== 'https:') {
     throw new Error('APP_BASE_URL must use HTTPS in production.');
   }
@@ -54,6 +60,17 @@ if (process.env.TRUST_PROXY) {
 }
 
 const db = new AppDatabase({ databaseUrl, databasePath });
+let databaseInitialization;
+
+function ensureDatabase() {
+  if (!databaseInitialization) {
+    databaseInitialization = db.initialize().catch((error) => {
+      databaseInitialization = null;
+      throw error;
+    });
+  }
+  return databaseInitialization;
+}
 
 const googleClient = googleEnabled
   ? new OAuth2Client(clientId, clientSecret, callbackUrl)
@@ -78,6 +95,14 @@ app.use(helmet({
   },
 }));
 app.use(express.json({ limit: '16kb' }));
+app.use(async (req, res, next) => {
+  try {
+    await ensureDatabase();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 app.use('/assets', express.static(path.join(__dirname, 'assets'), {
   dotfiles: 'deny',
   fallthrough: false,
@@ -313,8 +338,12 @@ app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'index.ht
 app.get('/signup.html', (req, res) => res.sendFile(path.join(__dirname, 'signup.html')));
 app.get('/about.html', (req, res) => res.sendFile(path.join(__dirname, 'about.html')));
 app.get('/logistics.html', (req, res) => res.sendFile(path.join(__dirname, 'logistics.html')));
-app.get('/waitlist', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'waitlist.html')));
-app.get('/waitlist.html', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'waitlist.html')));
+function sendWaitlistPage(req, res) {
+  res.set('Cache-Control', 'private, no-store');
+  res.sendFile(path.join(__dirname, 'waitlist.html'));
+}
+app.get('/waitlist', requireAuth, sendWaitlistPage);
+app.get('/waitlist.html', requireAuth, sendWaitlistPage);
 app.get('/healthz', async (req, res) => {
   await db.get('SELECT 1');
   res.set('Cache-Control', 'no-store').json({ status: 'ok' });
@@ -464,39 +493,8 @@ app.use((err, req, res, next) => {
 });
 
 let server;
-let shutdownStarted = false;
-function shutdown(signal) {
-  if (shutdownStarted) return;
-  shutdownStarted = true;
-  console.log(`Received ${signal}; shutting down.`);
-  if (!server) {
-    db.close().catch((error) => {
-      console.error('Database shutdown failed:', error.name || 'Error');
-      process.exitCode = 1;
-    });
-    return;
-  }
-  server.close((error) => {
-    if (error) {
-      console.error('HTTP server shutdown failed:', error.name || 'Error');
-      process.exitCode = 1;
-    }
-    db.close().catch((closeError) => {
-      console.error('Database shutdown failed:', closeError.name || 'Error');
-      process.exitCode = 1;
-    });
-  });
-}
-
-process.on('SIGINT', () => shutdown('SIGINT'));
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-
 async function startServer() {
-  await db.initialize();
-  if (shutdownStarted) {
-    await db.close();
-    return;
-  }
+  await ensureDatabase();
   server = app.listen(port, host, () => {
     console.log(`DART waitlist server listening at ${appBaseUrl}`);
     if (!googleEnabled) {
@@ -505,11 +503,42 @@ async function startServer() {
   });
 }
 
-startServer().catch((error) => {
-  console.error('Server startup failed:', error.name || 'Error');
-  process.exitCode = 1;
-  db.close().catch((closeError) => {
-    console.error('Database shutdown failed:', closeError.name || 'Error');
+module.exports = app;
+
+if (!isVercel) {
+  let shutdownStarted = false;
+  function shutdown(signal) {
+    if (shutdownStarted) return;
+    shutdownStarted = true;
+    console.log(`Received ${signal}; shutting down.`);
+    if (!server) {
+      db.close().catch((error) => {
+        console.error('Database shutdown failed:', error.name || 'Error');
+        process.exitCode = 1;
+      });
+      return;
+    }
+    server.close((error) => {
+      if (error) {
+        console.error('HTTP server shutdown failed:', error.name || 'Error');
+        process.exitCode = 1;
+      }
+      db.close().catch((closeError) => {
+        console.error('Database shutdown failed:', closeError.name || 'Error');
+        process.exitCode = 1;
+      });
+    });
+  }
+
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+  startServer().catch((error) => {
+    console.error('Server startup failed:', error.name || 'Error');
     process.exitCode = 1;
+    db.close().catch((closeError) => {
+      console.error('Database shutdown failed:', closeError.name || 'Error');
+      process.exitCode = 1;
+    });
   });
-});
+}

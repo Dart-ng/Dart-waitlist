@@ -6,6 +6,7 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "migrate:postgres": "node scripts/migrate-sqlite-to-postgres.js",
+    "vercel-build": "node scripts/prepare-vercel-assets.js",
     "test": "node --test"
   },
   "dependencies": {

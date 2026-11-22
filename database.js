@@ -1,8 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const Database = require('better-sqlite3');
 const { Pool } = require('pg');
 const WAITLIST_QUEUE_LOCK_ID = 707301;
+const DATABASE_SCHEMA_LOCK_ID = 707302;
 
 function toPostgresPlaceholders(sql) {
   let index = 0;
@@ -30,6 +30,7 @@ class AppDatabase {
       });
     } else {
       fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+      const Database = require('better-sqlite3');
       this.sqlite = new Database(databasePath);
       this.sqlite.pragma('foreign_keys = ON');
     }
@@ -38,7 +39,18 @@ class AppDatabase {
   async initialize() {
     if (this.isPostgres) {
       const schema = fs.readFileSync(path.join(__dirname, 'migrations', '001_postgres.sql'), 'utf8');
-      await this.pool.query(schema);
+      const client = await this.pool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query('SELECT pg_advisory_xact_lock($1)', [DATABASE_SCHEMA_LOCK_ID]);
+        await client.query(schema);
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
       await this.pool.query('SELECT 1');
       return;
     }
