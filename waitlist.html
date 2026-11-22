@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dart-motion-ready">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>You're on the list! — DART</title>
+  <meta name="description" content="Your DART early-access spot is saved." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="assets/site-animations.css?v=2" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'] },
+          colors: { brand: { yellow: '#FFC82C', dark: '#1B1D23' } },
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes modal-bounce-in {
+      0% { opacity: 0; transform: translateY(18px) scale(.985); }
+      68% { opacity: 1; transform: translateY(-4px) scale(1.01); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes podium-bounce-in {
+      0% { opacity: 0; transform: translateY(38px) scale(.94); }
+      68% { opacity: 1; transform: translateY(-9px) scale(1.025); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-bounce-in {
+      animation: modal-bounce-in 520ms cubic-bezier(.2, .8, .25, 1.2) both;
+      will-change: transform, opacity;
+    }
+
+    .podium-bounce-in {
+      animation: podium-bounce-in 720ms cubic-bezier(.2, .8, .25, 1.25) both;
+      will-change: transform, opacity;
+    }
+
+    @keyframes leaderboard-starfall {
+      0% { opacity: 0; transform: translate3d(0, -12%, 0); }
+      18%, 82% { opacity: .42; }
+      100% { opacity: 0; transform: translate3d(0, 12%, 0); }
+    }
+
+    #referralPodium {
+      isolation: isolate;
+      position: relative;
+      scroll-snap-type: x mandatory;
+    }
+
+    #referralPodium::before,
+    #referralPodium::after {
+      animation: leaderboard-starfall linear infinite;
+      background-repeat: no-repeat;
+      content: "";
+      inset: -20% 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 0;
+    }
+
+    #referralPodium::before {
+      animation-duration: 2.8s;
+      background-image:
+        linear-gradient(180deg, transparent, rgba(255, 255, 255, .9), transparent),
+        linear-gradient(180deg, transparent, rgba(255, 255, 255, .65), transparent),
+        linear-gradient(180deg, transparent, rgba(255, 255, 255, .85), transparent),
+        linear-gradient(180deg, transparent, rgba(255, 255, 255, .7), transparent),
+        linear-gradient(180deg, transparent, rgba(255, 255, 255, .8), transparent),
+        linear-gradient(180deg, transparent, rgba(255, 255, 255, .6), transparent);
+      background-position: 8% 6%, 25% 52%, 43% 18%, 61% 76%, 79% 34%, 94% 62%;
+      background-size: 1px 42px, 2px 56px, 1px 48px, 1px 60px, 2px 44px, 1px 52px;
+      filter: drop-shadow(0 0 3px rgba(255, 255, 255, .55));
+    }
+
+    #referralPodium::after {
+      animation-delay: -1.4s;
+      animation-duration: 3.6s;
+      background-image:
+        linear-gradient(180deg, transparent, rgba(255, 200, 44, .9), transparent),
+        linear-gradient(180deg, transparent, rgba(255, 255, 255, .75), transparent),
+        linear-gradient(180deg, transparent, rgba(255, 200, 44, .7), transparent),
+        linear-gradient(180deg, transparent, rgba(255, 255, 255, .8), transparent);
+      background-position: 16% 42%, 36% 12%, 68% 68%, 87% 28%;
+      background-size: 2px 50px, 1px 58px, 1px 46px, 2px 54px;
+      filter: drop-shadow(0 0 4px rgba(255, 200, 44, .5));
+    }
+
+    #referralPodium > article {
+      position: relative;
+      scroll-snap-align: center;
+      z-index: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .modal-bounce-in,
+      .podium-bounce-in {
+        animation: none !important;
+        will-change: auto;
+      }
+
+      #referralPodium::before,
+      #referralPodium::after {
+        animation: none;
+        opacity: .2;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-[#FAFAFA] font-sans text-zinc-900 antialiased">
+  <header class="w-full pt-6 pb-2">
+    <nav class="mx-auto flex max-w-[1240px] items-center justify-between px-5 sm:px-8">
+      <a href="index.html" class="flex-shrink-0" aria-label="DART home">
+        <img src="assets/logo.svg" alt="DART" class="h-11 w-auto object-contain sm:h-12" />
+      </a>
+      <div class="hidden items-center gap-9 text-[15px] font-semibold text-zinc-600 md:flex">
+        <a href="about.html" class="transition-colors hover:text-zinc-950">About us</a>
+        <a href="index.html#features" class="transition-colors hover:text-zinc-950">Features</a>
+        <a href="index.html#faqs" class="transition-colors hover:text-zinc-950">FAQs</a>
+      </div>
+      <button id="signOut" type="button" class="inline-block rounded-xl border-2 border-zinc-900 bg-brand-yellow px-5 py-2.5 text-[14px] font-bold text-zinc-950 shadow-[3px_3px_0px_0px_#141518] transition-all hover:-translate-x-px hover:-translate-y-px hover:shadow-[4px_4px_0px_0px_#141518]">
+        Sign out
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="min-h-[calc(100vh-100px)] bg-[url('assets/dart-bg-hero.png')] bg-cover bg-center bg-no-repeat px-5 pb-12 pt-8 text-center sm:px-8 md:pt-20">
+      <div class="mx-auto max-w-[1000px]">
+        <div class="flex items-center justify-center gap-4">
+          <div id="communityAvatars" class="flex items-center -space-x-3" role="img" aria-label="Profile photos of recent DART community members"></div>
+          <span id="communityCount" class="text-[30px] font-medium tracking-tight sm:text-[38px]" aria-live="polite">—</span>
+        </div>
+
+        <h1 class="mx-auto mt-5 max-w-[900px] break-words px-1 text-3xl font-semibold leading-tight tracking-tight sm:text-5xl md:text-[64px]">
+          You're on the list! <span aria-label="celebration">🎉</span>
+        </h1>
+        <p class="mt-4 text-sm text-zinc-700 sm:text-base">Your journey with DART is getting closer. We've saved your spot.</p>
+
+        <div class="mt-10 grid gap-4 text-center sm:mt-16 md:grid-cols-3 md:gap-5">
+          <article class="flex min-h-[256px] flex-col items-center justify-center rounded-[18px] border border-zinc-800 bg-white px-5 py-7">
+            <svg class="h-11 w-11 text-slate-900" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.59 13.41 11 3.83A2.8 2.8 0 0 0 9 3H4a1 1 0 0 0-1 1v5a2.8 2.8 0 0 0 .83 2l9.58 9.59a2.25 2.25 0 0 0 3.18 0l4-4a2.25 2.25 0 0 0 0-3.18Z"/>
+              <circle cx="7.5" cy="7.5" r="1.25" fill="currentColor" stroke="none"/>
+            </svg>
+            <p class="mt-5 text-5xl font-extrabold tracking-tight sm:text-[56px]">#<span id="queueNumber">—</span></p>
+            <p class="mt-4 text-sm font-bold uppercase">Your waitlist number</p>
+          </article>
+
+          <article class="flex min-h-[256px] flex-col items-center justify-center rounded-[18px] bg-[#111111] px-5 py-7 text-white">
+            <p id="aheadCount" class="text-5xl font-extrabold tracking-tight text-brand-yellow sm:text-[56px]">—</p>
+            <p class="mt-4 text-sm font-semibold">People ahead</p>
+            <button id="moveUp" type="button" disabled class="mt-5 rounded-xl border-2 border-zinc-900 bg-brand-yellow px-6 py-3 text-sm font-bold text-zinc-950 shadow-[3px_3px_0px_0px_#141518] transition hover:-translate-y-px hover:shadow-[4px_4px_0px_0px_#141518] disabled:cursor-not-allowed disabled:opacity-60">
+              Move up the waitlist!
+            </button>
+          </article>
+
+          <article class="flex min-h-[256px] flex-col items-center justify-center rounded-[18px] bg-brand-yellow px-5 py-7 text-zinc-950">
+            <svg class="h-11 w-11" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m18 0v-2a4 4 0 0 0-3-3.87M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8-7.87a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <p id="totalCount" class="mt-5 text-5xl font-extrabold tracking-tight sm:text-[56px]">—</p>
+            <p class="mt-4 text-sm font-bold">Total signups</p>
+          </article>
+        </div>
+        <p id="pageMessage" class="mt-5 min-h-5 text-sm" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="referralModal" aria-labelledby="modalTitle" class="fixed inset-0 m-0 h-full max-h-none w-full max-w-none overflow-y-auto border-0 bg-[#171717] p-0 text-white backdrop:bg-[#171717]">
+    <div id="modalContent" class="relative mx-auto flex min-h-full w-full max-w-[860px] flex-col items-center px-5 py-8 sm:px-10 sm:py-10">
+      <button id="closeModal" type="button" aria-label="Close referral window" class="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full text-3xl leading-none text-white/75 transition hover:bg-white/10 hover:text-white sm:right-8">
+        <span aria-hidden="true">&times;</span>
+      </button>
+
+      <h2 id="modalTitle" tabindex="-1" class="mt-4 text-center text-3xl font-medium leading-tight text-brand-yellow sm:text-[52px]">
+        Copy your referral link <span aria-hidden="true">👇🏽</span>
+      </h2>
+      <p class="mt-3 max-w-[560px] text-center text-base leading-snug text-white sm:text-[22px]">
+        Invite friends to join DART and earn a better position.
+      </p>
+
+      <div class="mt-9 flex w-full max-w-[440px] items-center gap-3">
+        <input id="modalReferralLink" type="text" readonly aria-label="Your referral link" class="min-w-0 flex-1 rounded-sm bg-[#34383F] px-4 py-2.5 text-center text-base italic text-white/80 outline-none sm:text-[22px]" />
+        <button id="copyReferralLink" type="button" aria-label="Copy referral link" class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-yellow">
+          <svg id="copyIcon" class="h-9 w-9" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="8" y="3" width="12" height="16" rx="2"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 7v12a2 2 0 0 0 2 2h10"/>
+          </svg>
+          <svg id="copiedIcon" class="hidden h-9 w-9 text-brand-yellow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6"/>
+          </svg>
+        </button>
+      </div>
+      <p id="copyStatus" class="mt-2 min-h-5 text-sm text-brand-yellow" role="status" aria-live="polite"></p>
+
+      <p class="mb-1 mt-6 text-center text-xs text-white/55 sm:hidden">Swipe sideways to see every rank</p>
+      <div id="referralPodium" class="mt-2 flex min-h-[320px] w-full max-w-full items-end justify-start gap-2 overflow-x-auto px-2 pb-1 sm:mt-10 sm:justify-center sm:gap-4" role="list" aria-label="Referral leaderboard"></div>
+      <p class="mt-7 text-center text-base text-white/75 sm:text-[22px]">We'll notify you when DART is ready to launch.</p>
+    </div>
+  </dialog>
+
+  <script src="assets/site-animations.js"></script>
+  <script>
+    const pageMessage = document.getElementById('pageMessage');
+    const referralModal = document.getElementById('referralModal');
+    const modalReferralLink = document.getElementById('modalReferralLink');
+    const moveUpButton = document.getElementById('moveUp');
+    const podium = document.getElementById('referralPodium');
+    const displayedCounts = {
+      queueNumber: null,
+      aheadCount: null,
+      totalCount: null,
+      communityCount: null,
+    };
+    let renderedPodiumSignature = null;
+    let communityAvatarSignature = null;
+    let waitlistLoaded = false;
+    let waitlistRefreshInFlight = false;
+    let liveWaitlistErrorShown = false;
+
+    function safeGooglePicture(value) {
+      if (typeof value !== 'string') return null;
+      try {
+        const url = new URL(value);
+        if (
+          url.protocol === 'https:' &&
+          (url.hostname === 'googleusercontent.com' || url.hostname.endsWith('.googleusercontent.com'))
+        ) {
+          return url.toString();
+        }
+      } catch {
+        return null;
+      }
+      return null;
+    }
+
+    function firstName(name) {
+      const cleanName = typeof name === 'string' ? name.trim() : '';
+      return cleanName ? cleanName.split(/\s+/)[0] : '';
+    }
+
+    function updateCount(elementId, key, value, suffix = '') {
+      const target = Number(value);
+      if (!Number.isFinite(target) || target < 0) {
+        throw new Error('Waitlist count response was invalid.');
+      }
+      if (displayedCounts[key] === target) return;
+
+      window.DartAnimations.countTo(document.getElementById(elementId), target, {
+        startValue: displayedCounts[key] === null ? 0 : displayedCounts[key],
+        suffix,
+      });
+      displayedCounts[key] = target;
+    }
+
+    function createPodiumCard({ label, name, pictureUrl, color, height, ownSpot = false, countTarget, countSuffix = '' }) {
+      const displayName = firstName(name) || (ownSpot ? 'You' : 'Open spot');
+      const card = document.createElement('article');
+      card.className = 'relative flex w-[80px] flex-shrink-0 flex-col items-center rounded-t-[36px] border-t-4 px-1 pb-4 pt-12 text-center sm:w-[108px] sm:rounded-t-[44px] sm:px-2 md:w-[125px]';
+      card.style.height = `${height}px`;
+      card.style.borderTopColor = color;
+      card.style.background = `linear-gradient(180deg, ${color} 0%, #171717 100%)`;
+      card.setAttribute('role', 'listitem');
+      card.setAttribute('aria-label', `${label}, ${displayName}`);
+
+      const avatar = document.createElement('div');
+      avatar.className = 'absolute -top-8 left-1/2 flex h-[68px] w-[68px] -translate-x-1/2 items-center justify-center overflow-hidden rounded-full border-4 bg-[#252525] sm:h-[82px] sm:w-[82px]';
+      avatar.style.borderColor = color;
+
+      const fallback = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      fallback.setAttribute('viewBox', '0 0 24 24');
+      fallback.setAttribute('fill', 'none');
+      fallback.setAttribute('stroke', 'currentColor');
+      fallback.setAttribute('stroke-width', '1.6');
+      fallback.setAttribute('aria-hidden', 'true');
+      fallback.setAttribute('class', 'h-9 w-9 text-white/60');
+      const head = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      head.setAttribute('cx', '12');
+      head.setAttribute('cy', '8');
+      head.setAttribute('r', '3.5');
+      const shoulders = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      shoulders.setAttribute('stroke-linecap', 'round');
+      shoulders.setAttribute('d', 'M4.5 20a7.5 7.5 0 0 1 15 0');
+      fallback.append(head, shoulders);
+      const picture = safeGooglePicture(pictureUrl);
+      if (picture) {
+        const image = document.createElement('img');
+        image.src = picture;
+        image.alt = '';
+        image.className = 'h-full w-full object-cover';
+        image.referrerPolicy = 'no-referrer';
+        image.loading = ownSpot ? 'eager' : 'lazy';
+        image.decoding = 'async';
+        image.addEventListener('error', () => {
+          image.remove();
+          avatar.appendChild(fallback);
+        }, { once: true });
+        avatar.appendChild(image);
+      } else {
+        avatar.appendChild(fallback);
+      }
+      card.appendChild(avatar);
+
+      const labelElement = document.createElement('p');
+      labelElement.className = 'text-lg font-medium leading-tight sm:text-xl';
+      labelElement.textContent = label;
+      if (Number.isFinite(countTarget)) {
+        labelElement.dataset.podiumCount = String(countTarget);
+        labelElement.dataset.podiumSuffix = countSuffix;
+      }
+      card.appendChild(labelElement);
+
+      const nameElement = document.createElement('p');
+      nameElement.className = 'mt-1 max-w-full truncate text-xs leading-tight text-white/80 sm:text-sm';
+      nameElement.textContent = displayName;
+      card.appendChild(nameElement);
+      return card;
+    }
+
+    function renderPodium(user, leaders) {
+      const signature = JSON.stringify([user.queueNumber, user.pictureUrl, leaders]);
+      if (signature === renderedPodiumSignature) return;
+      renderedPodiumSignature = signature;
+      podium.replaceChildren();
+
+      const colors = {
+        own: '#A855F7',
+        first: '#FACC15',
+        second: '#38BDF8',
+        third: '#FB923C',
+        fourth: '#4ADE80',
+      };
+      const leaderByRank = new Map(leaders.map((leader, index) => [index + 1, leader]));
+      const entries = [
+        {
+          label: user.queueNumber.toLocaleString(),
+          name: 'You',
+          pictureUrl: user.pictureUrl,
+          color: colors.own,
+          height: 190,
+          ownSpot: true,
+          countTarget: user.queueNumber,
+        },
+        { rank: 2, color: colors.second, height: 250 },
+        { rank: 1, color: colors.first, height: 290 },
+        { rank: 3, color: colors.third, height: 220 },
+        { rank: 4, color: colors.fourth, height: 190 },
+      ];
+
+      entries.forEach((entry) => {
+        if (!entry.rank) {
+          const card = createPodiumCard(entry);
+          card.style.animationDelay = '0ms';
+          podium.appendChild(card);
+          return;
+        }
+        const leader = leaderByRank.get(entry.rank);
+        const suffix = entry.rank === 1 ? 'st' : entry.rank === 2 ? 'nd' : entry.rank === 3 ? 'rd' : 'th';
+        const card = createPodiumCard({
+          label: `${entry.rank}${suffix}`,
+          name: leader ? leader.name : '',
+          pictureUrl: leader ? leader.pictureUrl : null,
+          color: entry.color,
+          height: entry.height,
+          countTarget: entry.rank,
+          countSuffix: suffix,
+        });
+        podium.appendChild(card);
+      });
+    }
+
+    async function getWaitlistData() {
+      const response = await fetch('/api/me', { cache: 'no-store' });
+      if (response.status === 401) {
+        window.location.replace('/signup.html');
+        return null;
+      }
+      if (!response.ok) throw new Error('Could not load your waitlist details. Please refresh to try again.');
+      return response.json();
+    }
+
+    function applyWaitlistData(user) {
+      updateCount('queueNumber', 'queueNumber', user.queueNumber);
+      updateCount('aheadCount', 'aheadCount', user.ahead);
+      updateCount('totalCount', 'totalCount', user.total);
+      updateCount('communityCount', 'communityCount', user.total, '+');
+      modalReferralLink.value = user.referralUrl;
+      renderCommunityAvatars(Array.isArray(user.avatars) ? user.avatars : []);
+      renderPodium(user, Array.isArray(user.leaders) ? user.leaders : []);
+    }
+
+    async function loadWaitlist() {
+      try {
+        const user = await getWaitlistData();
+        if (!user) return;
+        applyWaitlistData(user);
+        moveUpButton.disabled = false;
+        waitlistLoaded = true;
+        pageMessage.textContent = '';
+        window.setInterval(refreshWaitlist, 5000);
+      } catch (error) {
+        pageMessage.textContent = error.message || 'Could not load your waitlist details.';
+        pageMessage.classList.add('text-red-700');
+      }
+    }
+
+    async function refreshWaitlist() {
+      if (!waitlistLoaded || waitlistRefreshInFlight || document.hidden) return;
+      waitlistRefreshInFlight = true;
+      try {
+        const user = await getWaitlistData();
+        if (!user) return;
+        applyWaitlistData(user);
+        pageMessage.textContent = '';
+        pageMessage.classList.remove('text-red-700');
+        liveWaitlistErrorShown = false;
+      } catch (error) {
+        pageMessage.textContent = 'Live updates are temporarily unavailable; reconnecting.';
+        if (!liveWaitlistErrorShown) console.error('Could not refresh waitlist data:', error);
+        liveWaitlistErrorShown = true;
+      } finally {
+        waitlistRefreshInFlight = false;
+      }
+    }
+
+    function renderCommunityAvatars(urls) {
+      const container = document.getElementById('communityAvatars');
+      const pictures = urls.slice(0, 6).map(safeGooglePicture).filter(Boolean);
+      const signature = pictures.join('|');
+      if (signature === communityAvatarSignature) return;
+      communityAvatarSignature = signature;
+      container.replaceChildren();
+      pictures.forEach((picture, index) => {
+        const avatar = document.createElement('img');
+        avatar.src = picture;
+        avatar.alt = '';
+        avatar.className = 'dart-avatar-pop h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm sm:h-11 sm:w-11';
+        avatar.style.animationDelay = `${index * 70}ms`;
+        avatar.loading = 'lazy';
+        avatar.decoding = 'async';
+        avatar.referrerPolicy = 'no-referrer';
+        avatar.addEventListener('error', () => avatar.remove(), { once: true });
+        container.appendChild(avatar);
+      });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) refreshWaitlist();
+    });
+
+    moveUpButton.addEventListener('click', () => {
+      document.getElementById('copyIcon').classList.remove('hidden');
+      document.getElementById('copiedIcon').classList.add('hidden');
+      document.getElementById('copyReferralLink').setAttribute('aria-label', 'Copy referral link');
+      document.getElementById('copyStatus').textContent = '';
+      referralModal.showModal();
+      const modalContent = document.getElementById('modalContent');
+      modalContent.classList.remove('modal-bounce-in');
+      void modalContent.offsetWidth;
+      modalContent.classList.add('modal-bounce-in');
+      Array.from(podium.children).forEach((card, index) => {
+        card.classList.remove('podium-bounce-in');
+        card.style.animationDelay = `${index * 85}ms`;
+        void card.offsetWidth;
+        card.classList.add('podium-bounce-in');
+      });
+      podium.querySelectorAll('[data-podium-count]').forEach((label) => {
+        window.DartAnimations.countTo(label, Number(label.dataset.podiumCount), {
+          suffix: label.dataset.podiumSuffix || '',
+          duration: 720,
+        });
+      });
+      document.getElementById('modalTitle').focus();
+    });
+    document.getElementById('closeModal').addEventListener('click', () => referralModal.close());
+    referralModal.addEventListener('click', (event) => {
+      if (event.target === referralModal) referralModal.close();
+    });
+    referralModal.addEventListener('cancel', (event) => {
+      event.preventDefault();
+      referralModal.close();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && referralModal.open) {
+        event.preventDefault();
+        referralModal.close();
+      }
+    });
+    referralModal.addEventListener('close', () => moveUpButton.focus());
+
+    document.getElementById('copyReferralLink').addEventListener('click', async () => {
+      const status = document.getElementById('copyStatus');
+      try {
+        await navigator.clipboard.writeText(modalReferralLink.value);
+        document.getElementById('copyIcon').classList.add('hidden');
+        document.getElementById('copiedIcon').classList.remove('hidden');
+        document.getElementById('copyReferralLink').setAttribute('aria-label', 'Referral link copied');
+        status.textContent = 'Referral link copied!';
+      } catch {
+        modalReferralLink.focus();
+        modalReferralLink.select();
+        status.textContent = 'Select and copy your referral link.';
+      }
+    });
+
+    document.getElementById('signOut').addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/logout', { method: 'POST' });
+        if (!response.ok) throw new Error('Sign out failed. Please try again.');
+        window.location.assign('/signup.html');
+      } catch (error) {
+        pageMessage.textContent = error.message || 'Sign out failed. Please try again.';
+        pageMessage.classList.add('text-red-700');
+      }
+    });
+
+    loadWaitlist();
+  </script>
+</body>
+</html>

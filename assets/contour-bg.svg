@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" fill="none" preserveAspectRatio="none">
+  <path d="M-50,180 C200,240 450,110 750,160 C1050,210 1250,90 1500,40" stroke="rgba(255,255,255,0.08)" stroke-width="1.2" fill="none"/>
+  <path d="M-50,150 C220,220 480,90 780,140 C1080,190 1280,70 1500,20" stroke="rgba(255,255,255,0.11)" stroke-width="1.2" fill="none"/>
+  <path d="M-50,120 C240,200 510,70 810,120 C1110,170 1310,50 1500,5" stroke="rgba(255,255,255,0.08)" stroke-width="1.2" fill="none"/>
+  <path d="M-50,210 C180,260 420,130 720,180 C1020,230 1220,110 1500,60" stroke="rgba(255,255,255,0.10)" stroke-width="1.2" fill="none"/>
+  <path d="M-50,240 C160,280 390,150 690,200 C990,250 1190,130 1500,80" stroke="rgba(255,255,255,0.07)" stroke-width="1.2" fill="none"/>
+  <path d="M-50,90 C260,170 540,50 840,100 C1140,150 1340,30 1500,-10" stroke="rgba(255,255,255,0.06)" stroke-width="1.2" fill="none"/>
+  <path d="M-50,270 C140,300 360,170 660,220 C960,270 1160,150 1500,100" stroke="rgba(255,255,255,0.06)" stroke-width="1.2" fill="none"/>
+  <path d="M-50,60 C280,140 570,30 870,80 C1170,130 1370,10 1500,-25" stroke="rgba(255,255,255,0.05)" stroke-width="1.2" fill="none"/>
+  <path d="M-50,300 C120,320 330,190 630,240 C930,290 1130,170 1500,120" stroke="rgba(255,255,255,0.05)" stroke-width="1.2" fill="none"/>
+</svg>

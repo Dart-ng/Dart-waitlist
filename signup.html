@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dart-motion-ready">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Join DART — Early Access</title>
+  <meta name="description" content="Join the DART.ng early-access list." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet" />
+  <link href="assets/site-animations.css?v=2" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              yellow: '#FFC82C',
+              dark: '#1B1D23',
+            }
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (max-width: 767px) {
+      body.signup-page {
+        background-attachment: fixed;
+        background-image: url('assets/dart-bg-hero.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+
+      body.signup-page .signup-hero {
+        background-image: none;
+        min-height: calc(100vh - 76px);
+        min-height: calc(100dvh - 76px);
+      }
+    }
+  </style>
+</head>
+
+<body class="signup-page bg-[#FAFAFA] text-zinc-900 font-sans antialiased min-h-screen overflow-x-hidden selection:bg-brand-yellow selection:text-zinc-900">
+  <header class="w-full pt-6 pb-2">
+    <nav class="max-w-[1240px] mx-auto px-5 sm:px-8 flex items-center justify-between">
+      <a href="index.html" class="flex-shrink-0" aria-label="Dart Home">
+        <img src="assets/logo.svg" alt="Dart Logo" class="h-11 sm:h-12 w-auto object-contain" />
+      </a>
+      <div class="hidden md:flex items-center gap-9 text-[15px] font-semibold text-zinc-600">
+        <a href="about.html" class="hover:text-zinc-950 transition-colors">About us</a>
+        <a href="index.html#features" class="hover:text-zinc-950 transition-colors">Features</a>
+        <a href="index.html#faqs" class="hover:text-zinc-950 transition-colors">FAQs</a>
+      </div>
+      <a href="index.html#features" class="bg-brand-yellow text-zinc-950 font-bold text-[14px] px-5 py-2.5 rounded-xl border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#141518] hover:shadow-[4px_4px_0px_0px_#141518] hover:-translate-x-px hover:-translate-y-px active:shadow-[1px_1px_0px_0px_#141518] active:translate-x-0.5 active:translate-y-0.5 transition-all inline-block">
+        Learn More
+      </a>
+    </nav>
+  </header>
+
+  <main class="w-full">
+    <section class="signup-hero pt-10 md:pt-16 pb-10 md:pb-32 text-center bg-[url('assets/dart-bg-hero.png')] bg-center bg-cover bg-no-repeat">
+      <div class="max-w-[1240px] mx-auto px-5 sm:px-8">
+        <h1 class="text-[40px] sm:text-[52px] md:text-[64px] lg:text-[72px] font-bold leading-[1.08] tracking-tight text-zinc-950">
+          <span class="font-thin">Send or Receive</span> <span class="italic font-bold">any</span><br class="hidden sm:block" />
+          package with<span class="inline-flex items-center ml-2 align-middle"><span class="bg-brand-dark text-white text-[36px] sm:text-[48px] md:text-[58px] lg:text-[66px] font-thin px-5 sm:px-7 py-0.5 rounded-2xl leading-[1.15]">Confidence</span></span>
+        </h1>
+
+        <div class="mt-9 flex items-center justify-center gap-4 sm:gap-5">
+          <div id="communityAvatars" class="flex items-center -space-x-3" role="img" aria-label="Profile photos of recent DART community members"></div>
+          <span id="memberCount" class="text-[30px] sm:text-[42px] md:text-[64px] font-medium tracking-tight text-zinc-900" aria-live="polite">—</span>
+        </div>
+        <p id="communityStatus" class="sr-only" role="status" aria-live="polite"></p>
+
+        <div class="mt-8 flex justify-center">
+          <button id="googleSignup" type="button" class="w-full max-w-[575px] min-h-[52px] inline-flex items-center justify-center gap-3 bg-brand-yellow text-zinc-950 font-bold text-[16px] sm:text-[18px] px-6 py-4 rounded-xl hover:brightness-105 active:scale-[.99] transition-all">
+            <img src="assets/Google__G__Logo%20(1)%201.svg" alt="" aria-hidden="true" class="w-8 h-8 object-contain" />
+            Continue with Google
+          </button>
+        </div>
+
+        <p id="authMessage" class="min-h-5 mt-3 text-sm text-red-700" role="status" aria-live="polite"></p>
+        <p class="mt-1 text-[13px] text-zinc-700">
+          Already have an account?
+          <button id="showLogin" type="button" class="font-semibold underline underline-offset-2">sign in</button>
+        </p>
+
+        <form id="loginForm" class="hidden max-w-[460px] mx-auto mt-6 p-6 bg-white/95 rounded-2xl border border-zinc-200 shadow-lg text-left">
+          <h2 class="text-xl font-bold text-center mb-5">Welcome back</h2>
+          <label for="loginEmail" class="block text-sm font-semibold mb-1">Email address</label>
+          <input id="loginEmail" type="email" autocomplete="email" required class="w-full rounded-lg border border-zinc-300 px-3 py-3 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-brand-yellow" />
+          <label for="loginPassword" class="block text-sm font-semibold mt-4 mb-1">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" required class="w-full rounded-lg border border-zinc-300 px-3 py-3 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-brand-yellow" />
+          <p id="loginMessage" class="min-h-5 mt-2 text-sm text-red-700" role="status" aria-live="polite"></p>
+          <button type="submit" class="w-full bg-brand-yellow text-zinc-950 font-bold px-5 py-3 rounded-xl border-2 border-zinc-900">Sign in</button>
+          <p class="text-center text-sm mt-4">New to DART? <button id="showSignup" type="button" class="font-semibold underline underline-offset-2">Join the waitlist</button></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/site-animations.js"></script>
+  <script>
+    const memberCount = document.getElementById('memberCount');
+    const communityAvatars = document.getElementById('communityAvatars');
+    const authMessage = document.getElementById('authMessage');
+    const loginForm = document.getElementById('loginForm');
+    const oauthError = new URLSearchParams(window.location.search).get('oauthError');
+
+    if (oauthError === 'cancelled') {
+      authMessage.textContent = 'Google sign-in was cancelled.';
+    } else if (oauthError === 'failed') {
+      authMessage.textContent = 'Google sign-in could not be completed. Please try again.';
+    }
+
+    let lastMemberCount = null;
+    let avatarSignature = null;
+    let statsRequestInFlight = false;
+    let statsUnavailable = false;
+
+    function safeGooglePicture(value) {
+      if (typeof value !== 'string') return null;
+      try {
+        const url = new URL(value);
+        if (
+          url.protocol === 'https:' &&
+          (url.hostname === 'googleusercontent.com' || url.hostname.endsWith('.googleusercontent.com'))
+        ) {
+          return url.toString();
+        }
+      } catch {
+        return null;
+      }
+      return null;
+    }
+
+    function renderCommunityAvatars(urls) {
+      const pictures = (Array.isArray(urls) ? urls : [])
+        .slice(0, 6)
+        .map(safeGooglePicture)
+        .filter(Boolean);
+      const nextSignature = pictures.join('|');
+      if (nextSignature === avatarSignature) return;
+
+      avatarSignature = nextSignature;
+      communityAvatars.replaceChildren();
+      pictures.forEach((pictureUrl, index) => {
+        const avatar = document.createElement('img');
+        avatar.src = pictureUrl;
+        avatar.alt = '';
+        avatar.className = 'dart-avatar-pop h-14 w-14 rounded-full border-[3px] border-white object-cover shadow-sm';
+        avatar.style.animationDelay = `${index * 70}ms`;
+        avatar.loading = 'lazy';
+        avatar.decoding = 'async';
+        avatar.referrerPolicy = 'no-referrer';
+        avatar.addEventListener('error', () => avatar.remove(), { once: true });
+        communityAvatars.appendChild(avatar);
+      });
+    }
+
+    async function refreshCommunityStats() {
+      if (statsRequestInFlight || document.hidden) return;
+      statsRequestInFlight = true;
+      try {
+        const response = await fetch('/api/stats', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Waitlist count unavailable');
+        const stats = await response.json();
+        if (!Number.isInteger(stats.total) || stats.total < 0) {
+          throw new Error('Waitlist count response was invalid');
+        }
+
+        if (lastMemberCount !== stats.total) {
+          window.DartAnimations.countTo(memberCount, stats.total, {
+            startValue: lastMemberCount === null ? 0 : lastMemberCount,
+            suffix: '+',
+          });
+          lastMemberCount = stats.total;
+        }
+        renderCommunityAvatars(stats.avatars);
+        document.getElementById('communityStatus').textContent = '';
+        statsUnavailable = false;
+      } catch (error) {
+        if (lastMemberCount === null) memberCount.textContent = '—';
+        document.getElementById('communityStatus').textContent = 'Live community count is temporarily unavailable; retrying.';
+        if (!statsUnavailable) console.error('Could not refresh waitlist stats:', error);
+        statsUnavailable = true;
+      } finally {
+        statsRequestInFlight = false;
+      }
+    }
+
+    refreshCommunityStats();
+    window.setInterval(refreshCommunityStats, 5000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) refreshCommunityStats();
+    });
+
+    async function startGoogleAuth() {
+      authMessage.textContent = '';
+      try {
+        const response = await fetch('/api/config');
+        if (!response.ok) throw new Error('Google sign-in is unavailable right now.');
+        const config = await response.json();
+        if (!config.googleEnabled) throw new Error('Google sign-in has not been configured yet.');
+        const authUrl = new URL('/auth/google', window.location.origin);
+        const referralCode = new URLSearchParams(window.location.search).get('ref');
+        if (referralCode) authUrl.searchParams.set('ref', referralCode);
+        window.location.assign(authUrl);
+      } catch (error) {
+        authMessage.textContent = error.message || 'Google sign-in is unavailable right now.';
+      }
+    }
+
+    document.getElementById('googleSignup').addEventListener('click', startGoogleAuth);
+    document.getElementById('showLogin').addEventListener('click', () => {
+      loginForm.classList.remove('hidden');
+      document.getElementById('loginEmail').focus();
+    });
+    document.getElementById('showSignup').addEventListener('click', () => {
+      loginForm.classList.add('hidden');
+      document.getElementById('loginMessage').textContent = '';
+    });
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const message = document.getElementById('loginMessage');
+      message.textContent = '';
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('loginEmail').value,
+            password: document.getElementById('loginPassword').value,
+          }),
+        });
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result.error || 'Sign-in is unavailable. Please try again later.');
+        }
+        window.location.assign('/waitlist');
+      } catch (error) {
+        message.textContent = error.message || 'Sign-in is unavailable. Please try again later.';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 600" fill="none" preserveAspectRatio="none">
+  <path d="M-50,280 C200,380 480,180 820,260 C1160,340 1320,160 1550,110" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" fill="none"/>
+  <path d="M-50,240 C220,350 510,150 850,230 C1190,310 1350,130 1550,80" stroke="rgba(255,255,255,0.55)" stroke-width="1.8" fill="none"/>
+  <path d="M-50,200 C240,320 540,120 880,200 C1220,280 1380,100 1550,50" stroke="rgba(255,255,255,0.35)" stroke-width="1.8" fill="none"/>
+  <path d="M-50,320 C180,410 450,210 790,290 C1130,370 1290,190 1550,140" stroke="rgba(245,158,11,0.3)" stroke-width="1.8" fill="none"/>
+  <path d="M-50,360 C160,440 420,240 760,320 C1100,400 1260,220 1550,170" stroke="rgba(255,255,255,0.3)" stroke-width="1.8" fill="none"/>
+  <path d="M-50,160 C260,290 570,90 910,170 C1250,250 1410,70 1550,20" stroke="rgba(245,158,11,0.25)" stroke-width="1.8" fill="none"/>
+  <path d="M-50,400 C140,470 390,270 730,350 C1070,430 1230,250 1550,200" stroke="rgba(255,255,255,0.25)" stroke-width="1.8" fill="none"/>
+</svg>

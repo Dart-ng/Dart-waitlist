@@ -1,0 +1,67 @@
+html.dart-motion-ready [data-dart-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0) scale(.99);
+  transition:
+    opacity 620ms ease,
+    transform 620ms cubic-bezier(.2, .75, .25, 1);
+  transition-delay: var(--dart-reveal-delay, 0ms);
+}
+
+html.dart-motion-ready [data-dart-reveal].is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.dart-card-lift {
+  transition: transform 260ms cubic-bezier(.2, .75, .25, 1), box-shadow 260ms ease;
+}
+
+.dart-card-lift:hover {
+  transform: translateY(-4px) scale(1.005);
+}
+
+.dart-card-lift:active {
+  transform: translateY(-1px) scale(.99);
+}
+
+@keyframes dart-avatar-pop {
+  0% { opacity: 0; transform: scale(.72); }
+  70% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.dart-avatar-pop {
+  animation: dart-avatar-pop 520ms cubic-bezier(.2, .8, .25, 1.2) both;
+}
+
+[data-count-target] {
+  font-variant-numeric: tabular-nums;
+}
+
+html,
+body,
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.dart-motion-ready [data-dart-reveal],
+  html.dart-motion-ready [data-dart-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .dart-card-lift {
+    transition: none;
+  }
+
+  .dart-avatar-pop {
+    animation: none;
+  }
+}
