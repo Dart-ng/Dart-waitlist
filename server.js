@@ -493,6 +493,9 @@ app.use((err, req, res, next) => {
     path: req.path,
     name: err.name || 'Error',
     code: typeof err.code === 'string' ? err.code : 'unknown',
+    syscall: typeof err.syscall === 'string' ? err.syscall : undefined,
+    address: typeof err.address === 'string' ? err.address : undefined,
+    port: Number.isInteger(err.port) ? err.port : undefined,
   }));
   res.status(err.status || 500).json({ error: 'The request could not be completed.' });
 });

@@ -24,7 +24,18 @@ class AppDatabase {
     this.pool = null;
 
     if (this.isPostgres) {
-      this.pool = new Pool({ connectionString: databaseUrl });
+      const connectionUrl = new URL(databaseUrl);
+      if (!connectionUrl.searchParams.has('sslmode')) {
+        connectionUrl.searchParams.set('sslmode', 'require');
+      }
+      const poolOptions = {
+        connectionString: connectionUrl.toString(),
+        connectionTimeoutMillis: 10000,
+      };
+      if (process.env.VERCEL === '1') {
+        poolOptions.max = 1;
+      }
+      this.pool = new Pool(poolOptions);
       this.pool.on('error', (error) => {
         console.error('Unexpected PostgreSQL pool error:', error.name || 'Error');
       });

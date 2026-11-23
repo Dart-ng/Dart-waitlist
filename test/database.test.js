@@ -9,6 +9,26 @@ test('PostgreSQL placeholders are numbered in query order', () => {
   );
 });
 
+test('PostgreSQL pool uses SSL and a single connection on Vercel', async (t) => {
+  const previousVercel = process.env.VERCEL;
+  process.env.VERCEL = '1';
+  t.after(() => {
+    if (previousVercel === undefined) delete process.env.VERCEL;
+    else process.env.VERCEL = previousVercel;
+  });
+
+  const database = new AppDatabase({
+    databaseUrl: 'postgres://test:test@127.0.0.1:1/test',
+    databasePath: ':memory:',
+  });
+  t.after(() => database.close());
+
+  const connectionUrl = new URL(database.pool.options.connectionString);
+  assert.equal(connectionUrl.searchParams.get('sslmode'), 'require');
+  assert.equal(database.pool.options.max, 1);
+  assert.equal(database.pool.options.connectionTimeoutMillis, 10000);
+});
+
 test('SQLite fallback initializes the existing schema and assigns the next queue number', async (t) => {
   const database = new AppDatabase({ databasePath: ':memory:' });
   t.after(() => database.close());
