@@ -488,7 +488,12 @@ app.get('/auth/google/callback', authRateLimit, async (req, res) => {
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
-  console.error('Request failed:', err.name || 'Error');
+  console.error('Request failed:', JSON.stringify({
+    method: req.method,
+    path: req.path,
+    name: err.name || 'Error',
+    code: typeof err.code === 'string' ? err.code : 'unknown',
+  }));
   res.status(err.status || 500).json({ error: 'The request could not be completed.' });
 });
 
