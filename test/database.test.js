@@ -24,7 +24,7 @@ test('PostgreSQL pool uses SSL and a single connection on Vercel', async (t) => 
   t.after(() => database.close());
 
   const connectionUrl = new URL(database.pool.options.connectionString);
-  assert.equal(connectionUrl.searchParams.get('sslmode'), 'require');
+  assert.equal(connectionUrl.searchParams.get('sslmode'), 'no-verify');
   assert.equal(database.pool.options.max, 1);
   assert.equal(database.pool.options.connectionTimeoutMillis, 10000);
 });

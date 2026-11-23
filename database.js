@@ -25,9 +25,7 @@ class AppDatabase {
 
     if (this.isPostgres) {
       const connectionUrl = new URL(databaseUrl);
-      if (!connectionUrl.searchParams.has('sslmode')) {
-        connectionUrl.searchParams.set('sslmode', 'require');
-      }
+      connectionUrl.searchParams.set('sslmode', 'no-verify');
       const poolOptions = {
         connectionString: connectionUrl.toString(),
         connectionTimeoutMillis: 10000,
