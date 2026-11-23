@@ -31,6 +31,9 @@ class AppDatabase {
       const poolOptions = {
         connectionString: connectionUrl.toString(),
         connectionTimeoutMillis: 10000,
+        ssl: {
+          rejectUnauthorized: false,
+        },
       };
       if (process.env.VERCEL === '1') {
         poolOptions.max = 1;
