@@ -73,9 +73,9 @@
           package with<span class="inline-flex items-center ml-2 align-middle"><span class="bg-brand-dark text-white text-[36px] sm:text-[48px] md:text-[58px] lg:text-[66px] font-thin px-5 sm:px-7 py-0.5 rounded-2xl leading-[1.15]">Confidence</span></span>
         </h1>
 
-        <div class="mt-9 flex items-center justify-center gap-4 sm:gap-5">
+        <div class="mt-8 sm:mt-9 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-5">
           <div id="communityAvatars" class="flex items-center -space-x-3" role="img" aria-label="Profile photos of recent DART community members"></div>
-          <span id="memberCount" class="text-[30px] sm:text-[42px] md:text-[64px] font-medium tracking-tight text-zinc-900" aria-live="polite">—</span>
+          <span id="memberCount" class="text-[44px] sm:text-[48px] md:text-[64px] font-bold tracking-tight text-zinc-900 leading-none" aria-live="polite">—</span>
         </div>
         <p id="communityStatus" class="sr-only" role="status" aria-live="polite"></p>
 
@@ -155,7 +155,7 @@
         const avatar = document.createElement('img');
         avatar.src = pictureUrl;
         avatar.alt = '';
-        avatar.className = 'dart-avatar-pop h-14 w-14 rounded-full border-[3px] border-white object-cover shadow-sm';
+        avatar.className = 'dart-avatar-pop h-12 w-12 sm:h-14 sm:w-14 rounded-full border-[3px] border-white object-cover shadow-sm' + (index >= 3 ? ' hidden sm:inline-block' : '');
         avatar.style.animationDelay = `${index * 70}ms`;
         avatar.loading = 'lazy';
         avatar.decoding = 'async';
