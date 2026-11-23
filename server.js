@@ -377,6 +377,7 @@ app.get('/api/me', requireAuth, async (req, res) => {
   }));
   res.json({
     name: getFirstName(req.user.name),
+    fullName: req.user.name || '',
     email: req.user.email,
     queueNumber: req.user.queue_number,
     total,

@@ -34,6 +34,14 @@
       100% { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    @keyframes greeting-bounce {
+      0% { opacity: 0; transform: translateY(-20px) scale(0.9); }
+      60% { opacity: 1; transform: translateY(6px) scale(1.03); }
+      80% { transform: translateY(-3px) scale(0.99); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .greeting-bounce { animation: greeting-bounce 750ms cubic-bezier(0.2, 0.8, 0.25, 1.25) both; }
+
     .modal-bounce-in {
       animation: modal-bounce-in 520ms cubic-bezier(.2, .8, .25, 1.2) both;
       will-change: transform, opacity;
@@ -140,6 +148,11 @@
         <div class="flex items-center justify-center gap-4">
           <div id="communityAvatars" class="flex items-center -space-x-3" role="img" aria-label="Profile photos of recent DART community members"></div>
           <span id="communityCount" class="text-[30px] font-medium tracking-tight sm:text-[38px]" aria-live="polite">—</span>
+        </div>
+
+        <div id="userGreetingContainer" class="hidden mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50/90 px-5 py-2 shadow-sm text-zinc-900 transition-all">
+          <span class="text-xl inline-block animate-bounce">👋</span>
+          <span class="text-sm sm:text-base font-semibold">Welcome aboard, <span id="userFullName" class="font-extrabold text-brand-dark underline decoration-brand-yellow decoration-2 underline-offset-4"></span>!</span>
         </div>
 
         <h1 class="mx-auto mt-5 max-w-[900px] break-words px-1 text-3xl font-semibold leading-tight tracking-tight sm:text-5xl md:text-[64px]">
@@ -392,6 +405,16 @@
     }
 
     function applyWaitlistData(user) {
+      if (user.fullName || user.name) {
+        const nameDisplay = user.fullName || user.name;
+        const greetingEl = document.getElementById('userFullName');
+        const containerEl = document.getElementById('userGreetingContainer');
+        if (greetingEl && containerEl && containerEl.classList.contains('hidden')) {
+          greetingEl.textContent = nameDisplay;
+          containerEl.classList.remove('hidden');
+          containerEl.classList.add('greeting-bounce');
+        }
+      }
       updateCount('queueNumber', 'queueNumber', user.queueNumber);
       updateCount('aheadCount', 'aheadCount', user.ahead);
       updateCount('totalCount', 'totalCount', user.total);
