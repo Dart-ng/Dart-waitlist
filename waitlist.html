@@ -460,7 +460,7 @@
 
     function renderCommunityAvatars(urls) {
       const container = document.getElementById('communityAvatars');
-      const pictures = urls.slice(0, 6).map(safeGooglePicture).filter(Boolean);
+      const pictures = urls.slice(0, 5).map(safeGooglePicture).filter(Boolean);
       const signature = pictures.join('|');
       if (signature === communityAvatarSignature) return;
       communityAvatarSignature = signature;

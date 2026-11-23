@@ -328,7 +328,7 @@ async function getPublicStats() {
     FROM users
     WHERE google_picture_url IS NOT NULL
     ORDER BY id DESC
-    LIMIT 6
+    LIMIT 5
   `);
   return { total: Number(totalResult.total), avatars: avatars.map((user) => user.pictureUrl) };
 }

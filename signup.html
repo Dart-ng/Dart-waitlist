@@ -143,7 +143,7 @@
 
     function renderCommunityAvatars(urls) {
       const pictures = (Array.isArray(urls) ? urls : [])
-        .slice(0, 6)
+        .slice(0, 5)
         .map(safeGooglePicture)
         .filter(Boolean);
       const nextSignature = pictures.join('|');
