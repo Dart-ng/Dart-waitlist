@@ -122,6 +122,15 @@ function hash(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
+
+const NICKNAME_ADJECTIVES = ['Reaper', 'Skipper', 'Archer', 'Gunner', 'Falcon', 'Viper', 'Shadow', 'Blaze', 'Cosmo', 'Titan', 'Ghost', 'Nova'];
+function generateNickname(name, email, id) {
+  const seed = (String(name || '') + String(email || '') + String(id || '')).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const adj = NICKNAME_ADJECTIVES[seed % NICKNAME_ADJECTIVES.length];
+  const num = (seed % 89) + 10;
+  return `${adj}${num}`;
+}
+
 function getFirstName(value) {
   return typeof value === 'string' ? value.trim().split(/\s+/)[0] || '' : '';
 }
@@ -375,9 +384,27 @@ app.get('/api/me', requireAuth, async (req, res) => {
     referralCount: leader.referralCount,
     pictureUrl: leader.pictureUrl,
   }));
+
+  // Fetch all registered participants on the platform
+  const participantRows = await db.all(`
+    SELECT id, name, email, queue_number AS "queueNumber", referral_count AS "referralCount", google_picture_url AS "pictureUrl"
+    FROM users
+    ORDER BY queue_number ASC
+  `);
+  const participants = participantRows.map((p) => ({
+    id: p.id,
+    name: p.name || 'Anonymous',
+    nickname: generateNickname(p.name, p.email, p.id),
+    queueNumber: p.queueNumber,
+    referralCount: p.referralCount || 0,
+    pictureUrl: p.pictureUrl,
+    isSelf: p.id === req.user.id,
+  }));
+
   res.json({
     name: getFirstName(req.user.name),
     fullName: req.user.name || '',
+    nickname: generateNickname(req.user.name, req.user.email, req.user.id),
     email: req.user.email,
     queueNumber: req.user.queue_number,
     total,
@@ -386,6 +413,7 @@ app.get('/api/me', requireAuth, async (req, res) => {
     referralCount: req.user.referral_count,
     pictureUrl: req.user.google_picture_url,
     leaders: formattedLeaders,
+    participants,
     referralUrl: `${appBaseUrl}/signup.html?ref=${encodeURIComponent(req.user.referral_code)}`,
     registeredAt: req.user.created_at,
   });

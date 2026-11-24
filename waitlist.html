@@ -220,7 +220,17 @@
 
       <p class="mb-1 mt-6 text-center text-xs text-white/55 sm:hidden">Swipe sideways to see every rank</p>
       <div id="referralPodium" class="mt-2 flex min-h-[320px] w-full max-w-full items-end justify-start gap-2 overflow-x-auto px-2 pb-1 sm:mt-10 sm:justify-center sm:gap-4" role="list" aria-label="Referral leaderboard"></div>
+      
       <p class="mt-7 text-center text-base text-white/75 sm:text-[22px]">We'll notify you when DART is ready to launch.</p>
+
+      <!-- Participants List Section -->
+      <section class="mt-10 w-full max-w-[700px] text-left">
+        <h3 class="text-xl sm:text-2xl font-bold text-brand-yellow">Name of participants</h3>
+        <div id="participantsList" class="mt-5 flex flex-col gap-3" role="list" aria-label="Participants list">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
     </div>
   </dialog>
 
@@ -404,6 +414,86 @@
       return response.json();
     }
 
+    
+    function getOrdinalSuffix(n) {
+      const j = n % 10;
+      const k = n % 100;
+      if (j === 1 && k !== 11) return 'st';
+      if (j === 2 && k !== 12) return 'nd';
+      if (j === 3 && k !== 13) return 'rd';
+      return 'th';
+    }
+
+    function renderParticipants(participants) {
+      const container = document.getElementById('participantsList');
+      if (!container) return;
+      if (!Array.isArray(participants) || !participants.length) {
+        container.innerHTML = '<p class="text-sm text-white/50">No other participants yet.</p>';
+        return;
+      }
+
+      container.replaceChildren();
+      participants.forEach((p) => {
+        const row = document.createElement('article');
+        row.className = 'flex items-center justify-between rounded-[24px] bg-[#1F2127]/90 hover:bg-[#252830] transition-colors border border-white/5 px-4 sm:px-6 py-3.5 sm:py-4 shadow-sm';
+        row.setAttribute('role', 'listitem');
+
+        // Left side: Avatar + Name + Subtitle (Nickname + refs)
+        const left = document.createElement('div');
+        left.className = 'flex items-center gap-3.5 sm:gap-4 min-w-0';
+
+        // Avatar container with subtle colored border
+        const avatarBox = document.createElement('div');
+        const borderColor = p.isSelf ? 'border-purple-500' : 'border-brand-yellow/80';
+        avatarBox.className = `flex-shrink-0 h-11 w-11 sm:h-12 sm:w-12 rounded-full border-2 ${borderColor} overflow-hidden bg-[#2d3039] flex items-center justify-center`;
+
+        const picture = safeGooglePicture(p.pictureUrl);
+        if (picture) {
+          const img = document.createElement('img');
+          img.src = picture;
+          img.alt = '';
+          img.className = 'h-full w-full object-cover';
+          img.referrerPolicy = 'no-referrer';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          img.addEventListener('error', () => {
+            img.remove();
+            avatarBox.innerHTML = '<span class="text-xs font-bold text-white/70">' + (p.name[0] || '?') + '</span>';
+          }, { once: true });
+          avatarBox.appendChild(img);
+        } else {
+          avatarBox.innerHTML = '<span class="text-xs sm:text-sm font-bold text-white/70">' + (p.name[0] || '?') + '</span>';
+        }
+        left.appendChild(avatarBox);
+
+        // Name & details column
+        const info = document.createElement('div');
+        info.className = 'min-w-0 flex flex-col';
+
+        const nameEl = document.createElement('span');
+        nameEl.className = 'truncate text-sm sm:text-base font-semibold text-white';
+        nameEl.textContent = p.isSelf ? (p.name + ' (You)') : p.name;
+        info.appendChild(nameEl);
+
+        const subEl = document.createElement('div');
+        subEl.className = 'flex items-center gap-1.5 text-xs text-white/50 font-medium';
+        subEl.innerHTML = `<span class="text-white/75">${p.nickname || 'Participant'}</span> <span>•</span> <span class="text-brand-yellow font-bold">${p.referralCount || 0} Ref</span>`;
+        info.appendChild(subEl);
+
+        left.appendChild(info);
+        row.appendChild(left);
+
+        // Right side: Rank/Waitlist badge (#8th)
+        const rankEl = document.createElement('span');
+        rankEl.className = 'flex-shrink-0 text-lg sm:text-2xl font-extrabold tracking-tight text-brand-yellow pl-3';
+        const suffix = getOrdinalSuffix(p.queueNumber);
+        rankEl.textContent = `#${p.queueNumber}${suffix}`;
+        row.appendChild(rankEl);
+
+        container.appendChild(row);
+      });
+    }
+
     function applyWaitlistData(user) {
       if (user.fullName || user.name) {
         const nameDisplay = user.fullName || user.name;
@@ -422,6 +512,7 @@
       modalReferralLink.value = user.referralUrl;
       renderCommunityAvatars(Array.isArray(user.avatars) ? user.avatars : []);
       renderPodium(user, Array.isArray(user.leaders) ? user.leaders : []);
+      renderParticipants(Array.isArray(user.participants) ? user.participants : []);
     }
 
     async function loadWaitlist() {
