@@ -291,7 +291,7 @@
     function createPodiumCard({ label, name, pictureUrl, color, height, ownSpot = false, countTarget, countSuffix = '' }) {
       const displayName = firstName(name) || (ownSpot ? 'You' : 'Open spot');
       const card = document.createElement('article');
-      card.className = 'relative flex w-[80px] flex-shrink-0 flex-col items-center rounded-t-[36px] border-t-4 px-1 pb-4 pt-12 text-center sm:w-[108px] sm:rounded-t-[44px] sm:px-2 md:w-[125px]';
+      card.className = 'relative flex w-[80px] flex-shrink-0 flex-col items-center rounded-t-full border-t-4 px-1 pb-4 pt-12 text-center sm:w-[108px] sm:rounded-t-full sm:px-2 md:w-[125px]';
       card.style.height = `${height}px`;
       card.style.borderTopColor = color;
       card.style.background = `linear-gradient(180deg, ${color} 0%, #171717 100%)`;
@@ -467,7 +467,7 @@
       container.replaceChildren();
       participants.forEach((p) => {
         const row = document.createElement('article');
-        row.className = 'flex items-center justify-between rounded-[24px] bg-[#1F2127]/90 hover:bg-[#252830] transition-colors border border-white/5 px-4 sm:px-6 py-3.5 sm:py-4 shadow-sm';
+        row.className = 'flex items-center justify-between rounded-full bg-[#1F2127]/90 hover:bg-[#252830] transition-colors border border-white/5 px-4 sm:px-6 py-3 sm:py-3.5 shadow-sm';
         row.setAttribute('role', 'listitem');
 
         // Left side: Avatar + Name + Subtitle (Nickname + refs)
