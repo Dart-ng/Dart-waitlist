@@ -365,41 +365,51 @@
         third: '#FB923C',
         fourth: '#4ADE80',
       };
+
+      // Check if current user is among top 4 leaders
+      const userLeaderIndex = leaders.findIndex((l) => l.name === 'You' || l.id === user.id);
+      const userRank = userLeaderIndex >= 0 ? userLeaderIndex + 1 : null;
       const leaderByRank = new Map(leaders.map((leader, index) => [index + 1, leader]));
-      const entries = [
-        {
-          label: user.queueNumber.toLocaleString(),
-          name: 'You',
-          pictureUrl: user.pictureUrl,
-          color: colors.own,
-          height: 190,
-          ownSpot: true,
-          countTarget: user.queueNumber,
-        },
+
+      const ranksConfig = [
         { rank: 2, color: colors.second, height: 250 },
         { rank: 1, color: colors.first, height: 290 },
         { rank: 3, color: colors.third, height: 220 },
         { rank: 4, color: colors.fourth, height: 190 },
       ];
 
-      entries.forEach((entry) => {
-        if (!entry.rank) {
-          const card = createPodiumCard(entry);
-          card.style.animationDelay = '0ms';
-          podium.appendChild(card);
-          return;
-        }
-        const leader = leaderByRank.get(entry.rank);
-        const suffix = entry.rank === 1 ? 'st' : entry.rank === 2 ? 'nd' : entry.rank === 3 ? 'rd' : 'th';
+      // If user is NOT in the top 4, we show their separate card on the left
+      if (!userRank || userRank > 4) {
+        const userCard = createPodiumCard({
+          label: `#${user.queueNumber}`,
+          name: 'You',
+          pictureUrl: user.pictureUrl,
+          color: colors.own,
+          height: 190,
+          ownSpot: true,
+          countTarget: user.queueNumber,
+          countSuffix: getOrdinalSuffix(user.queueNumber),
+        });
+        userCard.style.animationDelay = '0ms';
+        podium.appendChild(userCard);
+      }
+
+      ranksConfig.forEach((cfg, index) => {
+        const leader = leaderByRank.get(cfg.rank);
+        const isUserAtThisRank = (userRank === cfg.rank);
+        const suffix = getOrdinalSuffix(cfg.rank);
+        
         const card = createPodiumCard({
-          label: `${entry.rank}${suffix}`,
-          name: leader ? leader.name : '',
-          pictureUrl: leader ? leader.pictureUrl : null,
-          color: entry.color,
-          height: entry.height,
-          countTarget: entry.rank,
+          label: `${cfg.rank}${suffix}`,
+          name: isUserAtThisRank ? 'You' : (leader ? leader.name : ''),
+          pictureUrl: isUserAtThisRank ? user.pictureUrl : (leader ? leader.pictureUrl : null),
+          color: cfg.color,
+          height: cfg.height,
+          ownSpot: isUserAtThisRank,
+          countTarget: cfg.rank,
           countSuffix: suffix,
         });
+        card.style.animationDelay = `${(index + 1) * 85}ms`;
         podium.appendChild(card);
       });
     }
@@ -415,6 +425,28 @@
     }
 
     
+    
+    const AVATAR_STROKE_COLORS = [
+      '#FACC15', // Gold / Yellow
+      '#38BDF8', // Sky blue
+      '#FB923C', // Orange
+      '#4ADE80', // Emerald green
+      '#A855F7', // Purple
+      '#EC4899', // Pink
+      '#14B8A6', // Teal
+      '#F43F5E', // Rose
+      '#6366F1', // Indigo
+      '#EAB308', // Amber
+      '#06B6D4', // Cyan
+      '#84CC16', // Lime
+    ];
+
+    function getAvatarStrokeColor(seedStr) {
+      if (!seedStr) return AVATAR_STROKE_COLORS[0];
+      const sum = String(seedStr).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+      return AVATAR_STROKE_COLORS[sum % AVATAR_STROKE_COLORS.length];
+    }
+
     function getOrdinalSuffix(n) {
       const j = n % 10;
       const k = n % 100;
@@ -444,8 +476,10 @@
 
         // Avatar container with subtle colored border
         const avatarBox = document.createElement('div');
-        const borderColor = p.isSelf ? 'border-purple-500' : 'border-brand-yellow/80';
-        avatarBox.className = `flex-shrink-0 h-11 w-11 sm:h-12 sm:w-12 rounded-full border-2 ${borderColor} overflow-hidden bg-[#2d3039] flex items-center justify-center`;
+        const strokeColor = p.isSelf ? '#A855F7' : getAvatarStrokeColor(p.name + p.id + p.nickname);
+        avatarBox.className = 'flex-shrink-0 h-11 w-11 sm:h-12 sm:w-12 rounded-full border-2 overflow-hidden bg-[#2d3039] flex items-center justify-center';
+        avatarBox.style.borderColor = strokeColor;
+        avatarBox.style.boxShadow = `0 0 10px ${strokeColor}25`;
 
         const picture = safeGooglePicture(p.pictureUrl);
         if (picture) {
