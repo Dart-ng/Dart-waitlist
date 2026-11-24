@@ -62,6 +62,9 @@
       isolation: isolate;
       position: relative;
       scroll-snap-type: x mandatory;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      touch-action: pan-y pinch-zoom pan-x;
     }
 
     #referralPodium::before,
@@ -219,7 +222,7 @@
       <p id="copyStatus" class="mt-2 min-h-5 text-sm text-brand-yellow" role="status" aria-live="polite"></p>
 
       <p class="mb-1 mt-6 text-center text-xs text-white/55 sm:hidden">Swipe sideways to see every rank</p>
-      <div id="referralPodium" class="mt-2 flex min-h-[320px] w-full max-w-full items-end justify-start gap-2 overflow-x-auto px-2 pb-1 sm:mt-10 sm:justify-center sm:gap-4" role="list" aria-label="Referral leaderboard"></div>
+      <div id="referralPodium" class="mt-2 flex min-h-[320px] w-full max-w-full items-end justify-start gap-2 overflow-x-auto overflow-y-hidden px-2 pb-1 sm:mt-10 sm:justify-center sm:gap-4" role="list" aria-label="Referral leaderboard"></div>
       
       <p class="mt-7 text-center text-base text-white/75 sm:text-[22px]">We'll notify you when DART is ready to launch.</p>
 
@@ -506,7 +509,8 @@
 
         const nameEl = document.createElement('span');
         nameEl.className = 'truncate text-sm sm:text-base font-semibold text-white';
-        nameEl.textContent = p.isSelf ? (p.name + ' (You)') : p.name;
+        const onlyFirstName = firstName(p.name);
+        nameEl.textContent = p.isSelf ? (`${onlyFirstName} (You)`) : onlyFirstName;
         info.appendChild(nameEl);
 
         const subEl = document.createElement('div');
