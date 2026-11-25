@@ -380,10 +380,24 @@ app.get('/api/me', requireAuth, async (req, res) => {
     LIMIT 4
   `);
   const formattedLeaders = leaders.map((leader) => ({
+    id: leader.id,
     name: leader.id === req.user.id ? 'You' : getFirstName(leader.name),
     referralCount: leader.referralCount,
     pictureUrl: leader.pictureUrl,
+    isSelf: leader.id === req.user.id,
   }));
+
+  // Calculate current user's referral leaderboard rank
+  let userReferralRank = null;
+  if (req.user.referral_count > 0) {
+    const higherRankUsers = await db.get(`
+      SELECT COUNT(*) AS count
+      FROM users
+      WHERE referral_count > ?
+         OR (referral_count = ? AND queue_number < ?)
+    `, [req.user.referral_count, req.user.referral_count, req.user.queue_number]);
+    userReferralRank = Number(higherRankUsers.count) + 1;
+  }
 
   // Fetch all registered participants on the platform
   const participantRows = await db.all(`
@@ -411,6 +425,7 @@ app.get('/api/me', requireAuth, async (req, res) => {
     avatars: stats.avatars,
     ahead: Number(aheadResult.count),
     referralCount: req.user.referral_count,
+    referralRank: userReferralRank,
     pictureUrl: req.user.google_picture_url,
     leaders: formattedLeaders,
     participants,

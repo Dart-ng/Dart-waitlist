@@ -356,7 +356,7 @@
     }
 
     function renderPodium(user, leaders) {
-      const signature = JSON.stringify([user.queueNumber, user.pictureUrl, leaders]);
+      const signature = JSON.stringify([user.queueNumber, user.referralRank, user.referralCount, user.pictureUrl, leaders]);
       if (signature === renderedPodiumSignature) return;
       renderedPodiumSignature = signature;
       podium.replaceChildren();
@@ -369,43 +369,75 @@
         fourth: '#4ADE80',
       };
 
-      // Check if current user is among top 4 leaders
-      const userLeaderIndex = leaders.findIndex((l) => l.name === 'You' || l.id === user.id);
-      const userRank = userLeaderIndex >= 0 ? userLeaderIndex + 1 : null;
+      // Determine user's rank in referral leaderboard
+      // 1. Check if user is in leaders array (either by isSelf or name === 'You')
+      const leaderIndex = leaders.findIndex((l) => l.isSelf || l.name === 'You');
+      const userRank = leaderIndex >= 0 ? leaderIndex + 1 : (user.referralRank || null);
+      const isUserInTop4 = userRank !== null && userRank <= 4;
+
       const leaderByRank = new Map(leaders.map((leader, index) => [index + 1, leader]));
 
-      const ranksConfig = [
+      // If user is NOT in the top 4 (either 5th+, or 0 referrals):
+      // Show dedicated motivational position pillar on the far left
+      if (!isUserInTop4) {
+        let labelText;
+        let suffixText = '';
+        let targetNum = 0;
+
+        if (userRank) {
+          // User has referrals and an earned leaderboard rank (5th, 6th, etc.)
+          suffixText = getOrdinalSuffix(userRank);
+          labelText = `${userRank}${suffixText}`;
+          targetNum = userRank;
+        } else {
+          // User has 0 referrals; show their waitlist spot to motivate them!
+          suffixText = getOrdinalSuffix(user.queueNumber);
+          labelText = `#${user.queueNumber}`;
+          targetNum = user.queueNumber;
+        }
+
+        const userCard = createPodiumCard({
+          label: labelText,
+          name: 'You',
+          pictureUrl: user.pictureUrl,
+          color: colors.own,
+          height: 190,
+          ownSpot: true,
+          countTarget: targetNum,
+          countSuffix: suffixText,
+        });
+        userCard.style.animationDelay = '0ms';
+        podium.appendChild(userCard);
+      }
+
+      // Visual order of podium: 2nd (left), 1st (center), 3rd (right-mid), 4th (far-right)
+      const podiumOrder = [
         { rank: 2, color: colors.second, height: 250 },
         { rank: 1, color: colors.first, height: 290 },
         { rank: 3, color: colors.third, height: 220 },
         { rank: 4, color: colors.fourth, height: 190 },
       ];
 
-      // If user is NOT in the top 4, we show their separate card on the left
-      if (!userRank || userRank > 4) {
-        const userCard = createPodiumCard({
-          label: `#${user.queueNumber}`,
-          name: 'You',
-          pictureUrl: user.pictureUrl,
-          color: colors.own,
-          height: 190,
-          ownSpot: true,
-          countTarget: user.queueNumber,
-          countSuffix: getOrdinalSuffix(user.queueNumber),
-        });
-        userCard.style.animationDelay = '0ms';
-        podium.appendChild(userCard);
-      }
-
-      ranksConfig.forEach((cfg, index) => {
+      podiumOrder.forEach((cfg, index) => {
+        const isUserAtThisRank = (isUserInTop4 && userRank === cfg.rank);
         const leader = leaderByRank.get(cfg.rank);
-        const isUserAtThisRank = (userRank === cfg.rank);
         const suffix = getOrdinalSuffix(cfg.rank);
         
+        let cardName = 'Open spot';
+        let cardPic = null;
+
+        if (isUserAtThisRank) {
+          cardName = 'You';
+          cardPic = user.pictureUrl;
+        } else if (leader) {
+          cardName = leader.name;
+          cardPic = leader.pictureUrl;
+        }
+
         const card = createPodiumCard({
           label: `${cfg.rank}${suffix}`,
-          name: isUserAtThisRank ? 'You' : (leader ? leader.name : ''),
-          pictureUrl: isUserAtThisRank ? user.pictureUrl : (leader ? leader.pictureUrl : null),
+          name: cardName,
+          pictureUrl: cardPic,
           color: cfg.color,
           height: cfg.height,
           ownSpot: isUserAtThisRank,
@@ -533,8 +565,8 @@
     }
 
     function applyWaitlistData(user) {
-      if (user.fullName || user.name) {
-        const nameDisplay = user.fullName || user.name;
+      if (user.name || user.fullName) {
+        const nameDisplay = firstName(user.name || user.fullName);
         const greetingEl = document.getElementById('userFullName');
         const containerEl = document.getElementById('userGreetingContainer');
         if (greetingEl && containerEl && containerEl.classList.contains('hidden')) {
